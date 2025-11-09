@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026年任务协作系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 登录界面样式 */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        }
+        
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .login-box h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: #2575fc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #1a65e0;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+        
+        /* 主应用样式 */
+        .app-header {
+            background: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .app-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2575fc;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        /* 日历导航 */
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .nav-btn {
+            background: #2575fc;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .current-month {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        /* 日历网格 */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .calendar-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .calendar-day {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            min-height: 120px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .calendar-day:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .day-number {
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .other-month {
+            color: #ccc;
+        }
+        
+        .today {
+            background: #e3f2fd;
+            border: 1px solid #2575fc;
+        }
+        
+        .task-item {
+            background: #f1f8ff;
+            padding: 5px;
+            margin-top: 5px;
+            border-radius: 3px;
+            font-size: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* 任务编辑模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .modal {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            background: #2575fc;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .task-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .task-list {
+            margin-top: 20px;
+        }
+        
+        .task-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .task-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-left: 10px;
+            color: #2575fc;
+        }
+        
+        .delete-btn {
+            color: #e74c3c !important;
+        }
+        
+        .status-indicator {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .calendar-grid {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 5px;
+            }
+            
+            .calendar-day {
+                min-height: 80px;
+                padding: 5px;
+            }
+            
+            .task-item {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录界面 -->
+    <div id="loginPage" class="login-container">
+        <div class="login-box">
+            <h1>2026年任务协作系统</h1>
+            <div class="form-group">
+                <label for="password">请输入密码</label>
+                <input type="password" id="password" placeholder="输入密码">
+            </div>
+            <button id="loginBtn" class="btn">登录</button>
+            <div id="errorMessage" class="error-message">密码错误，请重试</div>
+        </div>
+    </div>
+
+    <!-- 主应用界面 -->
+    <div id="appPage" style="display: none;">
+        <header class="app-header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="app-title">2026年任务协作系统</div>
+                    <div class="user-info">
+                        <span>当前用户: <span id="currentUser">用户</span></span>
+                        <button id="logoutBtn" class="logout-btn">退出登录</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            <div class="calendar-nav">
+                <button id="prevYear" class="nav-btn">上一年</button>
+                <div class="current-month" id="currentYear">2026年</div>
+                <button id="nextYear" class="nav-btn">下一年</button>
+            </div>
+
+            <div id="calendarContainer">
+                <!-- 日历将通过JavaScript动态生成 -->
+            </div>
+        </main>
+    </div>
+
+    <!-- 任务编辑模态框 -->
+    <div id="taskModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="modalDate">2026年1月1日 任务</div>
+                <button id="closeModal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="taskInput" class="task-input" placeholder="添加新任务...">
+                <button id="addTaskBtn" class="btn">添加任务</button>
+                
+                <div class="task-list" id="taskList">
+                    <!-- 任务列表将通过JavaScript动态生成 -->
+                </div>
+                
+                <div class="status-indicator" id="statusIndicator">已保存</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 应用状态
+        const state = {
+            currentYear: 2026,
+            currentDate: null,
+            tasks: {},
+            isLoggedIn: false
+        };
+
+        // DOM元素
+        const loginPage = document.getElementById('loginPage');
+        const appPage = document.getElementById('appPage');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const currentUser = document.getElementById('currentUser');
+        const prevYearBtn = document.getElementById('prevYear');
+        const nextYearBtn = document.getElementById('nextYear');
+        const currentYearEl = document.getElementById('currentYear');
+        const calendarContainer = document.getElementById('calendarContainer');
+        const taskModal = document.getElementById('taskModal');
+        const modalDate = document.getElementById('modalDate');
+        const taskInput = document.getElementById('taskInput');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const taskList = document.getElementById('taskList');
+        const closeModal = document.getElementById('closeModal');
+        const statusIndicator = document.getElementById('statusIndicator');
+
+        // 登录功能
+        loginBtn.addEventListener('click', () => {
+            const password = passwordInput.value;
+            if (password === '123456') {
+                state.isLoggedIn = true;
+                loginPage.style.display = 'none';
+                appPage.style.display = 'block';
+                currentUser.textContent = `用户${Math.floor(Math.random() * 1000)}`;
+                renderCalendar();
+            } else {
+                errorMessage.style.display = 'block';
+            }
+        });
+
+        // 退出登录
+        logoutBtn.addEventListener('click', () => {
+            state.isLoggedIn = false;
+            appPage.style.display = 'none';
+            loginPage.style.display = 'flex';
+            passwordInput.value = '';
+            errorMessage.style.display = 'none';
+        });
+
+        // 年份导航
+        prevYearBtn.addEventListener('click', () => {
+            state.currentYear--;
+            currentYearEl.textContent = `${state.currentYear}年`;
+            renderCalendar();
+        });
+
+        nextYearBtn.addEventListener('click', () => {
+            state.currentYear++;
+            currentYearEl.textContent = `${state.currentYear}年`;
+            renderCalendar();
+        });
+
+        // 关闭模态框
+        closeModal.addEventListener('click', () => {
+            taskModal.style.display = 'none';
+        });
+
+        // 添加任务
+        addTaskBtn.addEventListener('click', () => {
+            const taskText = taskInput.value.trim();
+            if (taskText) {
+                if (!state.tasks[state.currentDate]) {
+                    state.tasks[state.currentDate] = [];
+                }
+                state.tasks[state.currentDate].push({
+                    id: Date.now(),
+                    text: taskText,
+                    completed: false
+                });
+                taskInput.value = '';
+                renderTaskList();
+                updateStatus('任务已添加');
+                saveTasks();
+            }
+        });
+
+        // 渲染日历
+        function renderCalendar() {
+            calendarContainer.innerHTML = '';
+            
+            // 创建日历网格
+            const grid = document.createElement('div');
+            grid.className = 'calendar-grid';
+            
+            // 添加星期标题
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            weekdays.forEach(day => {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-header';
+                dayEl.textContent = day;
+                grid.appendChild(dayEl);
+            });
+            
+            // 生成全年日历（简化版，实际实现中可能需要分月显示）
+            for (let month = 0; month < 12; month++) {
+                const monthHeader = document.createElement('div');
+                monthHeader.className = 'calendar-header';
+                monthHeader.style.gridColumn = '1 / span 7';
+                monthHeader.textContent = `${month + 1}月`;
+                monthHeader.style.background = '#e3f2fd';
+                grid.appendChild(monthHeader);
+                
+                const firstDay = new Date(state.currentYear, month, 1);
+                const lastDay = new Date(state.currentYear, month + 1, 0);
+                const daysInMonth = lastDay.getDate();
+                const startingDay = firstDay.getDay();
+                
+                // 添加空白单元格
+                for (let i = 0; i < startingDay; i++) {
+                    const emptyDay = document.createElement('div');
+                    emptyDay.className = 'calendar-day other-month';
+                    grid.appendChild(emptyDay);
+                }
+                
+                // 添加日期单元格
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateStr = `${state.currentYear}-${month + 1}-${day}`;
+                    const dayEl = document.createElement('div');
+                    dayEl.className = 'calendar-day';
+                    
+                    const dayNumber = document.createElement('div');
+                    dayNumber.className = 'day-number';
+                    dayNumber.innerHTML = `${day}`;
+                    dayEl.appendChild(dayNumber);
+                    
+                    // 添加任务预览
+                    if (state.tasks[dateStr] && state.tasks[dateStr].length > 0) {
+                        const taskPreview = document.createElement('div');
+                        taskPreview.className = 'task-item';
+                        taskPreview.textContent = state.tasks[dateStr][0].text;
+                        if (state.tasks[dateStr].length > 1) {
+                            taskPreview.textContent += ` 等${state.tasks[dateStr].length}项任务`;
+                        }
+                        dayEl.appendChild(taskPreview);
+                    }
+                    
+                    dayEl.addEventListener('click', () => openTaskModal(dateStr));
+                    grid.appendChild(dayEl);
+                }
+            }
+            
+            calendarContainer.appendChild(grid);
+        }
+
+        // 打开任务模态框
+        function openTaskModal(dateStr) {
+            state.currentDate = dateStr;
+            const date = new Date(dateStr);
+            modalDate.textContent = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 任务`;
+            taskModal.style.display = 'flex';
+            renderTaskList();
+        }
+
+        // 渲染任务列表
+        function renderTaskList() {
+            taskList.innerHTML = '';
+            
+            if (!state.tasks[state.currentDate] || state.tasks[state.currentDate].length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.textContent = '暂无任务';
+                emptyMsg.style.textAlign = 'center';
+                emptyMsg.style.color = '#7f8c8d';
+                emptyMsg.style.padding = '20px';
+                taskList.appendChild(emptyMsg);
+                return;
+            }
+            
+            state.tasks[state.currentDate].forEach(task => {
+                const taskItem = document.createElement('div');
+                taskItem.className = 'task-list-item';
+                
+                const taskText = document.createElement('span');
+                taskText.textContent = task.text;
+                if (task.completed) {
+                    taskText.style.textDecoration = 'line-through';
+                    taskText.style.color = '#7f8c8d';
+                }
+                
+                const taskActions = document.createElement('div');
+                taskActions.className = 'task-actions';
+                
+                const toggleBtn = document.createElement('button');
+                toggleBtn.textContent = task.completed ? '标记未完成' : '标记完成';
+                toggleBtn.addEventListener('click', () => {
+                    task.completed = !task.completed;
+                    renderTaskList();
+                    saveTasks();
+                });
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = '删除';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.addEventListener('click', () => {
+                    state.tasks[state.currentDate] = state.tasks[state.currentDate].filter(t => t.id !== task.id);
+                    renderTaskList();
+                    renderCalendar();
+                    saveTasks();
+                });
+                
+                taskActions.appendChild(toggleBtn);
+                taskActions.appendChild(deleteBtn);
+                
+                taskItem.appendChild(taskText);
+                taskItem.appendChild(taskActions);
+                taskList.appendChild(taskItem);
+            });
+        }
+
+        // 更新状态指示器
+        function updateStatus(message) {
+            statusIndicator.textContent = message;
+            setTimeout(() => {
+                statusIndicator.textContent = '已保存';
+            }, 2000);
+        }
+
+        // 保存任务到本地存储（模拟后端存储）
+        function saveTasks() {
+            localStorage.setItem('taskSystem2026', JSON.stringify(state.tasks));
+            updateStatus('已保存到云端');
+        }
+
+        // 从本地存储加载任务（模拟从后端加载）
+        function loadTasks() {
+            const savedTasks = localStorage.getItem('taskSystem2026');
+            if (savedTasks) {
+                state.tasks = JSON.parse(savedTasks);
+            }
+        }
+
+        // 初始化应用
+        function init() {
+            loadTasks();
+            
+            // 按回车键登录
+            passwordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    loginBtn.click();
+                }
+            });
+            
+            // 按回车键添加任务
+            taskInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addTaskBtn.click();
+                }
+            });
+            
+            // 点击模态框外部关闭
+            taskModal.addEventListener('click', (e) => {
+                if (e.target === taskModal) {
+                    taskModal.style.display = 'none';
+                }
+            });
+        }
+
+        // 启动应用
+        init();
+    </script>
+</body>
+</html>
